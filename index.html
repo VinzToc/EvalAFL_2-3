@@ -1,0 +1,194 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AFL 2 et 3 – Évaluation EPS</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14151a">
+<link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{--ink:#1b2a49;--th:28px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:#14151a;min-height:100vh;padding:0 0 env(safe-area-inset-bottom)}
+header{display:flex;align-items:center;gap:12px;max-width:1150px;margin:auto;padding:12px 16px}
+header img{width:44px;height:44px;border-radius:12px}
+header h1{margin:0;font-size:1.25rem;color:#fff;flex:1}
+.ver{color:#c9ccd6;font-size:.8rem;font-weight:700}
+main{max-width:1150px;margin:auto;padding:0 12px 24px}
+.card{background:#fff;border-radius:18px;padding:12px 14px;margin-bottom:10px;box-shadow:0 8px 24px #0005}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;cursor:pointer;font-size:.9rem;background:linear-gradient(#ffa21f,#ff5e00);box-shadow:0 4px 10px #ff5e0055,inset 0 2px 0 #fff6}
+.btn.b{background:linear-gradient(#1f8bff,#0040d0);box-shadow:0 4px 10px #0040d055,inset 0 2px 0 #fff6}
+.btn.g{background:linear-gradient(#34c759,#1a8a3a);box-shadow:0 4px 10px #1a8a3a55,inset 0 2px 0 #fff6}
+.btn.r{background:linear-gradient(#ff4d4d,#c00000);box-shadow:0 4px 10px #c0000055,inset 0 2px 0 #fff6}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#status{font-size:.85rem;font-weight:600;flex:1;min-width:200px}
+.grid3{display:grid;grid-template-columns:1fr 2fr 1.2fr;gap:10px}
+label{display:block;font-weight:800;font-size:.75rem;margin-bottom:3px}
+select,input[type=date]{width:100%;padding:8px;border-radius:10px;border:2px solid #0b4fd033;font-size:.95rem;background:#fff;font-family:inherit}
+select:focus,input:focus{outline:none;border-color:#0b4fd0}
+.who{background:#e3eeff;border:2px solid #0b4fd0;border-radius:12px;padding:8px 12px;font-weight:800;margin-bottom:10px;display:none}
+.who.on{display:block}.who small{font-weight:600;color:#44527a}
+.hist{display:none;margin-bottom:10px}.hist.on{display:block}
+.hist h3{margin:0 0 6px;font-size:.85rem;color:#856404}
+.hw{max-height:130px;overflow:auto;border-radius:10px;border:2px solid #ffc107;background:#fff8e1}
+table{border-collapse:collapse;width:100%;font-size:.8rem}th{background:#ffc107;color:#533f03;padding:5px 7px;text-align:left;position:sticky;top:0}td{padding:4px 7px;border-bottom:1px solid #ffc10755}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.afl{border:2px solid #0b4fd0;border-radius:14px;padding:8px}
+.afl h2{margin:0 0 8px;font-size:.95rem;color:#fff;background:linear-gradient(#1f8bff,#0040d0);padding:5px 12px;border-radius:9px}
+.item{background:#f2f6ff;border-radius:10px;padding:7px 9px;margin-bottom:7px}
+.item input[type=text]{width:100%;padding:6px 8px;border-radius:8px;border:2px solid #0b4fd033;font-weight:700;font-size:.9rem;margin-bottom:4px;font-family:inherit}
+.sl{display:flex;align-items:flex-start;gap:10px}
+.sw{flex:1;position:relative}
+.sw input[type=range]{width:100%;height:10px;margin:9px 0 0;border-radius:6px;-webkit-appearance:none;appearance:none;outline:none;background:linear-gradient(to right,#ff6b6b,#ffa500,#4ecdc4,#45b7d1)}
+.sw.p input[type=range]{background:linear-gradient(to right,#1f8bff,#c040ff)}
+.sw input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:var(--th);height:var(--th);border-radius:50%;background:#fff;border:4px solid #0040d0;box-shadow:0 2px 6px #0004;cursor:pointer;margin-top:0}
+.sw input[type=range]::-moz-range-thumb{width:calc(var(--th) - 8px);height:calc(var(--th) - 8px);border-radius:50%;background:#fff;border:4px solid #0040d0;box-shadow:0 2px 6px #0004;cursor:pointer}
+.sw input[type=range]::-webkit-slider-runnable-track{height:10px;background:transparent}
+.marks{position:relative;height:24px;margin-top:2px}
+.marks button{position:absolute;top:0;transform:translateX(-50%);border:0;background:none;font-weight:800;font-size:.8rem;color:#1b2a49;cursor:pointer;padding:2px 6px;border-radius:8px;white-space:nowrap}
+.marks button::before{content:"";position:absolute;left:50%;top:-6px;width:2px;height:6px;background:#1b2a49;transform:translateX(-50%)}
+.marks button.on{background:#0040d0;color:#fff}
+.val{min-width:84px;text-align:center;background:#0040d0;color:#fff;border-radius:9px;padding:6px 8px;font-weight:800;font-size:.85rem;margin-top:3px}
+.pts{background:#f2f6ff;border-radius:12px;padding:8px 10px;margin-bottom:10px}
+.pts b{font-size:.8rem;color:#0040d0}
+.pts .val{min-width:200px;background:#6a0fd0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding-top:8px;border-top:2px solid #1b2a4915}
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1a8a3a;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;box-shadow:0 6px 18px #0006;display:none;z-index:9;max-width:90vw;text-align:center}
+#toast.err{background:#c0392b}
+@media(max-width:820px){.cols,.grid3{grid-template-columns:1fr}}
+</style></head><body>
+<header><img src="icons/icon-192.png" alt=""><h1>AFL 2 et 3 – Évaluation EPS</h1><span class="ver">Version <span id="ver"></span></span></header>
+<main>
+<div class="card">
+ <div class="row"><span id="status">Chargement…</span>
+  <input id="file" type="file" accept=".xlsx,.csv,text/csv" hidden>
+  <button class="btn b" id="imp">📂 Importer (.xlsx Mes Apps EPS / .csv Pronote)</button></div>
+</div>
+<div class="card">
+ <div class="grid3">
+  <div><label for="fc">CLASSE</label><select id="fc"><option value="">Toutes les classes</option></select></div>
+  <div><label for="fe">ÉLÈVES</label><select id="fe"><option value="">— Sélectionner un élève —</option></select></div>
+  <div><label for="dt">DATE DE LA SÉANCE</label><input id="dt" type="date"></div>
+ </div>
+</div>
+<div class="card">
+ <div class="who" id="who"></div>
+ <div class="hist" id="hist"><h3>📜 HISTORIQUE DES ÉVALUATIONS</h3><div class="hw"><table id="ht"></table></div></div>
+ <div class="pts"><b>CHOIX DE RÉPARTITION DES POINTS ENTRE AFL 2 ET 3</b><div class="sl" id="slPts"></div></div>
+ <div class="cols">
+  <div class="afl"><h2>AFL 2</h2><div id="g2"></div></div>
+  <div class="afl"><h2>AFL 3</h2><div id="g3"></div></div>
+ </div>
+</div>
+<div class="card"><div class="actions">
+ <button class="btn g" id="save">💾 Enregistrer la séance</button>
+ <button class="btn" id="exp">⬇ Exporter vers Mes Apps EPS (.xlsx)</button>
+ <button class="btn r" id="del">🗑 Supprimer les données AFL 2-3</button>
+</div></div>
+</main>
+<div id="toast"></div>
+<script src="version.js"></script>
+<script src="eps-core.js"></script>
+<script>
+const APP_ID='AFL2-3';            // nom de la feuille créée dans la base Mes Apps EPS
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PTS=['AFL2 = 6pts / AFL3 = 2pts','AFL2 = 4pts / AFL3 = 4pts','AFL2 = 2pts / AFL3 = 6pts'];
+const ITEMS=[['a2i1','AFL2 Item 1','g2'],['a2i2','AFL2 Item 2','g2'],['a3i1','AFL3 Item 1','g3'],['a3i2','AFL3 Item 2','g3'],['a3i3','AFL3 Item 3','g3']];
+let ELEVES=[],cur=null,dirty=false,toastT;
+$('#ver').textContent=APP_VERSION;
+
+function toast(m,err){const t=$('#toast');t.textContent=m;t.className=err?'err':'';t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',3800)}
+const touch=()=>{dirty=true};
+
+/* ── Curseur gradué : le curseur s'arrête exactement sur chaque graduation ── */
+function slider(host,id,min,max,labels,onChange){
+ const n=max-min,w=document.createElement('div');w.className='sw'+(id==='pts'?' p':'');
+ w.innerHTML=`<input type="range" id="r_${id}" min="${min}" max="${max}" step="1" value="${id==='pts'?1:min}"><div class="marks">${labels.map((l,i)=>`<button type="button" data-v="${min+i}" style="left:calc(var(--th)/2 + (100% - var(--th))*${i/n})">${esc(l)}</button>`).join('')}</div>`;
+ const v=document.createElement('div');v.className='val';
+ host.append(w,v);
+ const r=w.querySelector('input'),upd=()=>{const x=+r.value;v.textContent=onChange(x);w.querySelectorAll('.marks button').forEach(b=>b.classList.toggle('on',+b.dataset.v===x))};
+ r.addEventListener('input',()=>{upd();touch()});
+ w.querySelectorAll('.marks button').forEach(b=>b.onclick=()=>{r.value=b.dataset.v;upd();touch()});
+ upd();return r}
+const R={};
+R.pts=slider($('#slPts'),'pts',0,2,['6 / 2','4 / 4','2 / 6'],x=>PTS[x]);
+let LAB={};try{LAB=JSON.parse(localStorage.getItem('afl23_labels')||'{}')}catch(e){}
+ITEMS.forEach(([k,ph,g])=>{
+ const d=document.createElement('div');d.className='item';
+ d.innerHTML=`<input type="text" id="t_${k}" placeholder="Nom de l'item" value="${esc(LAB[k]||'')}">`;
+ $('#'+g).append(d);
+ const h=document.createElement('div');h.className='sl';d.append(h);
+ R[k]=slider(h,k,1,4,['1','2','3','4'],x=>'Niveau '+x);
+ $('#t_'+k).addEventListener('input',e=>{LAB[k]=e.target.value;try{localStorage.setItem('afl23_labels',JSON.stringify(LAB))}catch(x){}touch()});
+});
+$('#dt').value=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
+$('#dt').addEventListener('input',touch);
+const dateFR=iso=>{const p=(iso||'').split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0].slice(2)}`:''};
+
+/* ── Base élèves (import automatique depuis la base partagée de Mes Apps EPS) ── */
+const cmp=(a,b)=>(a.nom+a.prenom).localeCompare(b.nom+b.prenom,'fr');
+async function load(){
+ try{ELEVES=(await EPS.all()).sort(cmp)}catch(e){ELEVES=[]}
+ let m=null;try{m=await EPS.meta()}catch(e){}
+ $('#status').innerHTML=ELEVES.length?`✅ <b>${ELEVES.length}</b> élèves chargés depuis Mes Apps EPS`+(m?` · dernier import : ${esc(new Date(m.v).toLocaleString('fr-FR'))}`:''):'⚠ Aucune liste d’élèves sur cet appareil : ouvrez Mes Apps EPS pour importer l’export Pronote, ou importez ici le fichier .xlsx de la base.';
+ const cl=[...new Set(ELEVES.map(e=>e.classe))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'fr',{numeric:true})),c0=$('#fc').value;
+ $('#fc').innerHTML='<option value="">Toutes les classes</option>'+cl.map(c=>`<option ${c===c0?'selected':''}>${esc(c)}</option>`).join('');
+ fillStudents()}
+function fillStudents(){
+ const c=$('#fc').value,id0=cur&&cur.id,L=ELEVES.filter(e=>!c||e.classe===c);
+ $('#fe').innerHTML='<option value="">— Sélectionner un élève —</option>'+L.map(e=>`<option value="${esc(e.id)}" ${e.id===id0?'selected':''}>${esc(e.nom.toUpperCase())} ${esc(e.prenom)}${c?'':' ('+esc(e.classe)+')'}</option>`).join('');
+ pick()}
+function pick(){
+ cur=ELEVES.find(e=>e.id===$('#fe').value)||null;
+ const w=$('#who'),h=$('#hist');
+ if(!cur){w.classList.remove('on');h.classList.remove('on');return}
+ const L=((cur.ext||{})[APP_ID]||{}).lignes||[];
+ w.innerHTML=`${esc(cur.nom.toUpperCase())} ${esc(cur.prenom)} <small>— Classe ${esc(cur.classe)} — ${L.length} séance(s) enregistrée(s)</small>`;w.classList.add('on');
+ const cols=['Date séance','Répartition','AFL2 Item 1','AFL2 Item 2','AFL3 Item 1','AFL3 Item 2','AFL3 Item 3'];
+ $('#ht').innerHTML=L.length?`<tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`+L.map(l=>`<tr>${cols.map(c=>`<td>${esc(l[c]??'')}</td>`).join('')}</tr>`).join(''):'<tr><td>Aucune évaluation précédente pour cet élève.</td></tr>';
+ h.classList.add('on')}
+$('#fc').onchange=()=>{cur=null;fillStudents()};
+$('#fe').onchange=pick;
+
+/* ── Import manuel ── */
+$('#imp').onclick=()=>$('#file').click();
+$('#file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{const r=await EPS.importFile(f);await load();toast(`Import réussi : ${r.add} ajouté(s), ${r.upd} mis à jour`+(r.apps?`, ${r.apps} feuille(s) d’application lue(s).`:'.'))}
+ catch(x){toast('Import impossible : '+(x.message||x),true)}};
+
+/* ── Enregistrement de la séance dans la base locale partagée (feuille « AFL2-3 ») ── */
+async function saveSeance(){
+ if(!cur){toast('Sélectionnez d’abord un élève.',true);return false}
+ const d=dateFR($('#dt').value);if(!d){toast('Renseignez la date de la séance.',true);return false}
+ const row={'Date séance':d,'Répartition':PTS[+R.pts.value]};
+ ITEMS.forEach(([k,ph])=>row[ph]=+R[k].value);
+ const lab=ITEMS.map(([k])=>($('#t_'+k).value||'').trim());
+ if(lab.some(Boolean))row['Intitulés']='AFL2 : '+(lab[0]||'-')+' / '+(lab[1]||'-')+' ; AFL3 : '+(lab[2]||'-')+' / '+(lab[3]||'-')+' / '+(lab[4]||'-');
+ const old=((cur.ext||{})[APP_ID]||{}).lignes||[];
+ const lignes=old.filter(l=>l['Date séance']!==d);lignes.push(row);   // une séance par date : la nouvelle remplace l'ancienne du même jour
+ try{await EPS.setExt(APP_ID,cur.id,{lignes})}catch(x){toast('Enregistrement impossible : '+(x.message||x),true);return false}
+ dirty=false;await load();toast('Séance enregistrée pour '+cur.nom+' '+cur.prenom+'.');return true}
+$('#save').onclick=saveSeance;
+
+/* ── Export vers Mes Apps EPS : base complète (.xlsx) avec la feuille AFL2-3 ── */
+$('#exp').onclick=async()=>{
+ if(dirty&&cur&&confirm('La séance en cours n’est pas enregistrée.\nL’enregistrer avant l’export ?'))await saveSeance();
+ if(!ELEVES.length){toast('Aucune base élèves à exporter : importez d’abord la liste.',true);return}
+ try{const b=await EPS.exportXLSX(),a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([b],{type:EPS.XLSX_MIME}));a.download='liste_eleves_EPS.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast('Fichier exporté : à importer dans Mes Apps EPS.')}
+ catch(x){toast('Export impossible : '+(x.message||x),true)}};
+
+/* ── Suppression des données de cette application (la liste d'élèves est conservée) ── */
+$('#del').onclick=async()=>{
+ if(!confirm('Supprimer définitivement toutes les évaluations AFL 2-3 enregistrées sur cet appareil ?\n(La liste des élèves et les données des autres applications sont conservées.)\nPensez à exporter une sauvegarde.'))return;
+ try{const d=await EPS.open();
+  await new Promise((ok,ko)=>{const t=d.transaction('eleves','readwrite'),o=t.objectStore('eleves');
+   o.getAll().onsuccess=ev=>ev.target.result.forEach(e=>{if(e.ext&&e.ext[APP_ID]){delete e.ext[APP_ID];o.put(e)}});
+   t.oncomplete=ok;t.onerror=()=>ko(t.error)});
+  dirty=false;await load();toast('Données AFL 2-3 supprimées.')}
+ catch(x){toast('Suppression impossible : '+(x.message||x),true)}};
+
+/* ── Démarrage : import automatique + actualisation au retour sur l'application ── */
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+if('serviceWorker'in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js');
+load();
+</script></body></html>
